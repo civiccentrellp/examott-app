@@ -1,5 +1,5 @@
-import AsideNavigation from "../components/AsideNavigation";
-import Header from "../components/Header";
+import { AsideNavigation } from "../components/AsideNavigation";
+import { Header } from "../components/Header";
 
 export default function DashboardLayout({
   children,

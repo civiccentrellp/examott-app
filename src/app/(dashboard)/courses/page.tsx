@@ -5,9 +5,16 @@ type Course = {
 };
 
 async function getCourses(): Promise<Course[]> {
-    const res = await fetch("http://localhost:3000/api/courses", { cache: "no-store" });
+    const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:4000";
+    const res = await fetch(`${apiBaseUrl}/api/courses`, { cache: "no-store" });
+
+    if (!res.ok) {
+        throw new Error("Failed to fetch courses");
+    }
+
     return res.json();
 }
+
 
 export default async function CoursesPage() {
     const courses: Course[] = await getCourses();

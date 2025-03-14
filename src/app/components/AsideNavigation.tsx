@@ -74,7 +74,7 @@ const menuItems = [
   },
 ];
 
-const AsideNavigation = () => {
+export const AsideNavigation = () => {
   const [collapsed, setCollapsed] = useState(false);
 
   
@@ -141,6 +141,4 @@ const AsideNavigation = () => {
     </aside>
   );
 };
-
-export default AsideNavigation;
 

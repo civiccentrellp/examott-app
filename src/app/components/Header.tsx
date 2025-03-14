@@ -6,7 +6,7 @@ import {
   XSquareFill
  } from "react-bootstrap-icons";
 
-const Header = ({ contentName = "Dashboard" }: { contentName?: string }) => {
+ export const Header = ({ contentName = "Dashboard" }: { contentName?: string }) => {
   const [selectedGoal, setSelectedGoal] = useState<string>("Select a Goal");
   const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
   const [isProfileDropdownOpen, setIsProfileDropdownOpen] = useState<boolean>(false);
@@ -121,6 +121,3 @@ const Header = ({ contentName = "Dashboard" }: { contentName?: string }) => {
     </>
   );
 };
-
-export default Header;
-
