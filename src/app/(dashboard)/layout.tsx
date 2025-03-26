@@ -17,7 +17,7 @@ export default function DashboardLayout({
           
           <div className="flex flex-col transition-all duration-300 w-full" id="content-container">
         <Header />
-        <main className="flex-1 p-4">{children}</main>
+        <main className="flex-1 p-4 overflow-y-auto">{children}</main>
       </div>
           
       </div>

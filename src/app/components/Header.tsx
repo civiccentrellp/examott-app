@@ -1,12 +1,13 @@
 "use client";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { 
   ArrowRightSquareFill ,
   XSquareFill
  } from "react-bootstrap-icons";
 
- export const Header = ({ contentName = "Dashboard" }: { contentName?: string }) => {
+ export const Header = () => {
   const [selectedGoal, setSelectedGoal] = useState<string>("Select a Goal");
   const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
   const [isProfileDropdownOpen, setIsProfileDropdownOpen] = useState<boolean>(false);
@@ -21,6 +22,21 @@ import {
   };
 
   const goals = ["UPSC", "TGPSC", "APPSC"];
+
+  // Get current path
+  const pathname = usePathname();
+
+  // Convert pathname to readable title
+  const pageTitles: { [key: string]: string } = {
+    "/": "Dashboard",
+    "/courses": "Courses",
+    "/courses/overview": "Course Overview",
+    "/profile": "Profile",
+    "/settings": "Account Settings",
+  };
+
+  const contentName = pageTitles[pathname] || "Dashboard";
+
 
   // Close dropdown when clicking outside
   useEffect(() => {

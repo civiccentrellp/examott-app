@@ -101,7 +101,7 @@ export const AsideNavigation = () => {
   return (
     <aside
       className={`bg-gray-900 text-white h-screen p-4 top-0 left-0 transition-all duration-300 ${
-        collapsed ? "w-16" : "w-60"
+        collapsed ? "w-16" : "w-64"
       }`}
     >
       {/* Header with logo and collapse button */}
