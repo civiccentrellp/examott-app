@@ -6,6 +6,8 @@ import ReactQuill from "react-quill";
 import "react-quill/dist/quill.snow.css";
 import Link from "next/link";
 import { Plus, CaretRightFill, CaretDownFill, Download, Trash, PencilSquare } from "react-bootstrap-icons";
+import { updateCourse } from "@/lib/getCourses";
+
 interface Course {
     id: number;
     name: string;
@@ -16,6 +18,8 @@ interface Course {
     discountedPrice: number;
     expiryDate: string;
     status: string;
+    duration: string;
+
 }
 type ContentType = "Folder" | "Video" | "Test" | "Document" | "Image" | "Import Content" | "File";
 
@@ -61,11 +65,14 @@ const CourseOverview = () => {
         const fetchCourse = async () => {
             if (!courseId) return;
             try {
+                setLoading(true);
                 const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:4000";
-                const res = await fetch(`${apiBaseUrl}/api/courses/${courseId}`);
+                const res = await fetch(`${apiBaseUrl}/api/courses/${courseId}`, { cache: "no-store" });
+
                 if (!res.ok) throw new Error("Failed to fetch course");
+
                 const data: Course = await res.json();
-                setCourse(data);
+                setCourse(data); // Ensure correct data is set
             } catch (error) {
                 console.error(error);
             } finally {
@@ -75,45 +82,76 @@ const CourseOverview = () => {
         fetchCourse();
     }, [courseId]);
 
+
     if (loading) return <p>Loading course details...</p>;
     if (!course) return <p>Course not found.</p>;
 
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-        setCourse({ ...course, [e.target.name]: e.target.value });
+        if (!course) return;
+
+        const { name, value } = e.target;
+
+        setCourse((prev) => ({
+            ...prev!,
+            [name]: name.includes("Price") ? Number(value) || 0 : value, // Convert price to number
+        }));
     };
+
+
 
     const handleSave = async () => {
         if (!course) return;
 
         try {
             const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:4000";
-            const res = await fetch(`${apiBaseUrl}/api/courses/${course.id}`, {
+            const courseId = Number(params.id);
+
+            // Create an update payload that includes only modified fields
+            const updatedData: Partial<Course> = {};
+
+            if (course.name) updatedData.name = course.name;
+            if (course.description) updatedData.description = course.description;
+            if (newThumbnail) updatedData.thumbnail = newThumbnailPreview || course.thumbnail;
+            if (newVideoUrl) updatedData.videoUrl = newVideoUrl;
+            if (course.originalPrice !== undefined) updatedData.originalPrice = course.originalPrice;
+            if (course.discountedPrice !== undefined) updatedData.discountedPrice = course.discountedPrice;
+            if (course.expiryDate) updatedData.expiryDate = course.expiryDate;
+            if (course.status) updatedData.status = course.status;
+
+            const res = await fetch(`${apiBaseUrl}/api/courses/${courseId}`, {
                 method: "PUT",
-                headers: {
-                    "Content-Type": "application/json",
-                },
-                body: JSON.stringify(course),
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(updatedData),
             });
 
-            if (!res.ok) throw new Error("Failed to update course");
+            if (!res.ok) {
+                const errorData = await res.text();
+                console.error("Update failed:", errorData);
+                throw new Error("Failed to update course");
+            }
 
-            alert("Course updated successfully!");
-
-            // Ensure UI updates immediately
-            const updatedCourse = await res.json();
+            const updatedCourse: Course = await res.json();
             setCourse(updatedCourse);
-
+            alert("Course updated successfully!");
             setEditMode(false);
         } catch (error) {
             console.error(error);
             alert("Error updating course.");
         }
     };
-    const getEmbeddedUrl = (url: string) => {
+
+
+
+
+    const getEmbeddedUrl = (url: string | undefined) => {
+        if (!url) return ""; // Handle undefined URL safely
+
         const regex = /(?:youtube\.com\/(?:.*v=|embed\/)|youtu\.be\/)([^"&?\/\s]+)/;
         const match = url.match(regex);
+
         return match ? `https://www.youtube.com/embed/${match[1]}` : url;
     };
+
 
 
     const toggleEditMode = () => {
@@ -223,9 +261,6 @@ const CourseOverview = () => {
         }
     };
 
-
-
-
     return (
         <div className="p-6">
             {/* Breadcrumbs */}
@@ -295,7 +330,7 @@ const CourseOverview = () => {
                             <div className="mt-4 flex flex-row justify-between">
                                 <div className="flex flex-col justify-between">
                                     <p><strong>Price:</strong> {editMode ? <input type="number" name="originalPrice" value={course.originalPrice} onChange={handleInputChange} className="border p-1 w-full rounded-lg" /> : `₹${course.originalPrice}`}</p>
-                                    <p><strong>Duration:</strong> {editMode ? <input type="text" name="expiryDate" value={course.expiryDate} onChange={handleInputChange} className="border p-1 w-full rounded-lg" /> : course.expiryDate}</p>
+                                    <p><strong>Duration:</strong> {editMode ? <input type="text" name="duration" value={course.duration} onChange={handleInputChange} className="border p-1 w-full rounded-lg" /> : course.duration}</p>
                                 </div>
                                 <div className="flex flex-col justify-between">
                                     <p className=""><strong>Discounted Price:</strong> {editMode ? <input type="number" name="discountedPrice" value={course.discountedPrice} onChange={handleInputChange} className="border p-1 w-full rounded-lg" /> : `₹${course.discountedPrice}`}</p>
