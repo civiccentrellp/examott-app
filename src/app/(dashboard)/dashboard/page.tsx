@@ -1,7 +1,7 @@
-const AdminPage = () => {
+const dashboard = () => {
   return (
-    <div className=''>AdminPage</div>
+    <div className=''>dashboard</div>
   )
 }
 
-export default AdminPage
+export default dashboard

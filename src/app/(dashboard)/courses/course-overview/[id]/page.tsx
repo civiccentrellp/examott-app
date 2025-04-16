@@ -1,15 +1,16 @@
 "use client";
-
+import "react-quill/dist/quill.snow.css";
 import { useParams } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
-import ReactQuill from "react-quill";
-import "react-quill/dist/quill.snow.css";
+import dynamic from "next/dynamic";
+const ReactQuill = dynamic(() => import("react-quill"), { ssr: false });
 import Link from "next/link";
 import { Plus, CaretRightFill, CaretDownFill, Download, Trash, PencilSquare } from "react-bootstrap-icons";
-import { updateCourse } from "@/lib/getCourses";
+import { updateCourse } from "@/utils/getCourses";
+import { uploadCourseImage } from "@/utils/firebaseUpload";
 
 interface Course {
-    id: number;
+    id: string;
     name: string;
     description: string;
     thumbnail: string;
@@ -19,7 +20,6 @@ interface Course {
     expiryDate: string;
     status: string;
     duration: string;
-
 }
 type ContentType = "Folder" | "Video" | "Test" | "Document" | "Image" | "Import Content" | "File";
 
@@ -38,7 +38,7 @@ interface Faq {
 
 const CourseOverview = () => {
     const params = useParams();
-    const courseId = params.id;
+    const courseId = params?.id;
     const fileInputRef = useRef<HTMLInputElement | null>(null);
 
 
@@ -49,6 +49,8 @@ const CourseOverview = () => {
     const [newThumbnail, setNewThumbnail] = useState<File | null>(null);
     const [newThumbnailPreview, setNewThumbnailPreview] = useState<string | null>(null);
     const [newVideoUrl, setNewVideoUrl] = useState("");
+    const [startDate, setStartDate] = useState<string>("");
+    const [endDate, setEndDate] = useState<string>("");
     const [activeTab, setActiveTab] = useState<"Overview" | "Contents" | "FAQ's">("Overview");
     const [contents, setContents] = useState<ContentItem[]>([]);
     const [folderOpenState, setFolderOpenState] = useState<Record<number, boolean>>({});
@@ -60,19 +62,26 @@ const CourseOverview = () => {
     const [newFaq, setNewFaq] = useState({ question: "", answer: "" });
     const [editingId, setEditingId] = useState<number | null>(null);
 
-
     useEffect(() => {
         const fetchCourse = async () => {
-            if (!courseId) return;
+            if (!courseId) {
+                console.error("Course ID is missing");
+                return;
+            }
+
             try {
                 setLoading(true);
                 const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:4000";
                 const res = await fetch(`${apiBaseUrl}/api/courses/${courseId}`, { cache: "no-store" });
 
-                if (!res.ok) throw new Error("Failed to fetch course");
+                if (!res.ok) {
+                    const errorData = await res.text();
+                    console.error("Failed to fetch course:", errorData);
+                    throw new Error("Failed to fetch course");
+                }
 
-                const data: Course = await res.json();
-                setCourse(data); // Ensure correct data is set
+                const result = await res.json();
+                setCourse(result.data);
             } catch (error) {
                 console.error(error);
             } finally {
@@ -81,7 +90,7 @@ const CourseOverview = () => {
         };
         fetchCourse();
     }, [courseId]);
-
+    
 
     if (loading) return <p>Loading course details...</p>;
     if (!course) return <p>Course not found.</p>;
@@ -100,37 +109,42 @@ const CourseOverview = () => {
 
 
     const handleSave = async () => {
-        if (!course) return;
-
+        if (!courseId) {
+            console.error("Course ID is missing");
+            return;
+        }
+        console.log(course.description);
+    
         try {
             const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:4000";
-            const courseId = Number(params.id);
-
-            // Create an update payload that includes only modified fields
-            const updatedData: Partial<Course> = {};
-
-            if (course.name) updatedData.name = course.name;
-            if (course.description) updatedData.description = course.description;
-            if (newThumbnail) updatedData.thumbnail = newThumbnailPreview || course.thumbnail;
-            if (newVideoUrl) updatedData.videoUrl = newVideoUrl;
-            if (course.originalPrice !== undefined) updatedData.originalPrice = course.originalPrice;
-            if (course.discountedPrice !== undefined) updatedData.discountedPrice = course.discountedPrice;
-            if (course.expiryDate) updatedData.expiryDate = course.expiryDate;
-            if (course.status) updatedData.status = course.status;
-
+    
+            let finalThumbnail = course.thumbnail;
+            if (newThumbnail) {
+                finalThumbnail = await uploadCourseImage(newThumbnail); // Ensure thumbnail is uploaded
+            }
+    
+            const videoUrlToSave = newVideoUrl || course.videoUrl;
+            const durationToSave = `${startDate} to ${endDate}`;
+    
+            const updatedData: Partial<Course> = {
+                ...course,
+                thumbnail: finalThumbnail,
+                videoUrl: videoUrlToSave,
+                duration: durationToSave,
+            };
+    
+            // Sending the updated data to the server
             const res = await fetch(`${apiBaseUrl}/api/courses/${courseId}`, {
                 method: "PUT",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify(updatedData),
             });
-
-            if (!res.ok) {
-                const errorData = await res.text();
-                console.error("Update failed:", errorData);
-                throw new Error("Failed to update course");
-            }
-
+    
+            if (!res.ok) throw new Error("Failed to update course");
+    
             const updatedCourse: Course = await res.json();
+    
+            // Update the course state immediately after receiving the updated data
             setCourse(updatedCourse);
             alert("Course updated successfully!");
             setEditMode(false);
@@ -139,7 +153,6 @@ const CourseOverview = () => {
             alert("Error updating course.");
         }
     };
-
 
 
 
@@ -160,6 +173,8 @@ const CourseOverview = () => {
             setShowDropdown(false);
         }
     };
+
+    
 
     const handleThumbnailChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         if (e.target.files && e.target.files[0]) {
@@ -303,12 +318,12 @@ const CourseOverview = () => {
                                     <ReactQuill
                                         value={course.description}
                                         onChange={(value) => setCourse({ ...course, description: value })}
-                                        className="border p-2 w-full h-[auto] rounded-lg bg-white"
+                                        className=" p-2 w-full h-[auto] bg-white"
                                         modules={{
                                             toolbar: [
                                                 [{ header: [1, 2, false] }],
                                                 ["bold", "italic", "underline"],
-                                                [{ list: "ordered" }, { list: "bullet" }], // Enable numbered & bullet lists
+                                                [{ list: "ordered" }, { list: "bullet" }],
                                                 ["link", "image"],
                                                 ["clean"]
                                             ]
@@ -394,7 +409,7 @@ const CourseOverview = () => {
                                             Actions
                                         </button>
                                         {showDropdown && (
-                                            <div className="absolute top-100 right-0 mt-2 bg-white shadow-lg rounded-lg w-32">
+                                            <div className="absolute top-10 right-0 mt-2 bg-white shadow-lg rounded-lg w-32">
                                                 <button onClick={toggleEditMode} className="block px-4 py-2 w-full text-left hover:bg-gray-200">
                                                     Edit
                                                 </button>

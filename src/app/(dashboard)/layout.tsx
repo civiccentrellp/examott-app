@@ -1,5 +1,6 @@
-import { AsideNavigation } from "../components/AsideNavigation";
-import { Header } from "../components/Header";
+import { AsideNavigation } from "../../components/AsideNavigation";
+import { Header } from "../../components/Header";
+import ProtectedRoute from "@/components/ProtectedRoute";
 
 export default function DashboardLayout({
   children,
@@ -7,7 +8,7 @@ export default function DashboardLayout({
   children: React.ReactNode;
 }>) {
   return (
-    
+    <ProtectedRoute>
       <div className="h-screen flex w-full">
           {/* left */}
           
@@ -21,6 +22,7 @@ export default function DashboardLayout({
       </div>
           
       </div>
-   
+    </ProtectedRoute>
+  
   );
 }

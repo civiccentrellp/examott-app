@@ -18,6 +18,8 @@ export async function addCourse(courseData: any) {
             videoUrl: courseData.videoUrl || null,
             originalPrice: parseFloat(courseData.originalPrice) || 0,
             discountedPrice: parseFloat(courseData.discountedPrice) || 0,
+            startDate: courseData.startDate || null,  // ✅ Add this
+            endDate: courseData.endDate || null,      // ✅ And this
             expiryDate: courseData.expiryDate || null,
             status: courseData.status || "active",
         };

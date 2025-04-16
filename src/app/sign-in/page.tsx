@@ -1,7 +1,6 @@
-const LoginPage = () => {
-  return (
-    <div className=''>LoginPage</div>
-  )
-}
+// src/app/sign-in/page.tsx
+import AuthPage from "@/components/auth/AuthPage";
 
-export default LoginPage
+export default function SignInPage() {
+  return <AuthPage />;
+}
