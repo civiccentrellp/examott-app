@@ -1,7 +1,16 @@
-const dashboard = () => {
-  return (
-    <div className=''>dashboard</div>
-  )
-}
+'use client';
 
-export default dashboard
+import { useUser } from "@/context/userContext";
+import DashboardPage from "@/components/dashboard/DashboardPage";
+
+const Dashboard = () => {
+  const { user, loading } = useUser();
+
+  return (
+    <div className="min-h-screen">
+      <DashboardPage/>
+    </div>
+  );
+};
+
+export default Dashboard;

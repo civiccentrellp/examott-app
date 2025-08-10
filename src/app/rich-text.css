@@ -1,0 +1,26 @@
+/* Tighten up spacing in rich text areas */
+.rich-text-preview p,
+.ql-editor p {
+  margin-top: 0.25rem;
+  margin-bottom: 0.25rem;
+  line-height: 1.4;
+}
+
+.rich-text-preview ul,
+.rich-text-preview ol,
+.ql-editor ul,
+.ql-editor ol {
+  padding-left: 1.25rem;
+  margin: 0.5rem 0;
+}
+
+.ql-editor {
+  padding: 0.5rem 0;
+  line-height: 1.5;
+}
+
+/* Prevent extra spacing on empty lines */
+.ql-editor p:empty::before {
+  content: '';
+  display: none;
+}

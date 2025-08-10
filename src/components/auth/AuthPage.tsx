@@ -10,37 +10,43 @@ export default function AuthPage() {
   const [isSignIn, setIsSignIn] = useState(true);
 
   return (
-    <div
-      className="flex h-screen w-full items-center justify-center bg-cover bg-center bg-no-repeat px-4"
-      style={{ backgroundImage: "url('/assets/login-bg.jpg')" }}
-    >
-      {/* Container */}
-      <div className="flex flex-col md:flex-row w-full max-w-5xl h-[500px] rounded-2xl overflow-hidden bg-white shadow-2xl border border-gray-200">
-        
-        {/* Left Panel - Auth Form */}
-        <motion.div
-          className="w-full md:w-1/2 h-full p-8 md:p-12 flex justify-center items-center bg-gray-900 text-white order-2 md:order-1"
-          key={isSignIn ? "signIn" : "signUp"}
-          initial={{ x: isSignIn ? 40 : -40, opacity: 0 }}
-          animate={{ x: 0, opacity: 1 }}
-          transition={{ duration: 0.4 }}
-        >
-          {isSignIn ? (
-            <SignInForm toggle={() => setIsSignIn(false)} />
-          ) : (
-            <SignUpForm toggle={() => setIsSignIn(true)} />
-          )}
-        </motion.div>
+    <div className="relative flex h-screen w-full items-center justify-center">
+      {/* Blurred Background Layer */}
+      <div
+        className="absolute inset-0 bg-cover bg-center filter blur-xs"
+        style={{ backgroundImage: "url('/assets/bg.jpg')" }}
+      />
+      <div className="absolute inset-0 bg-white/30" /> {/* optional light overlay */}
 
-        {/* Right Panel - Welcome Card */}
-        <motion.div
-          className="w-full md:w-1/2 h-full flex flex-col justify-center items-center text-center p-8 md:p-12 bg-gray-50 order-1 md:order-2"
-          key={isSignIn ? "welcomeSignIn" : "welcomeSignUp"}
-          initial={{ x: isSignIn ? -40 : 40, opacity: 0 }}
-          animate={{ x: 0, opacity: 1 }}
-          transition={{ duration: 0.4 }}
-        >
+      {/* Foreground Container */}
+      <div className="relative z-10 flex flex-col md:flex-row w-full md:max-w-6xl h-full md:h-[70%] 
+                      rounded-4 shadow-2xl overflow-hidden bg-white">
+
+        {/* Left Panel - Gradient BG */}
+        <div className="relative w-full md:w-2/3 flex flex-col justify-center items-center 
+                        bg-gradient-to-br from-violet-400 via-violet-100 to-white p-4 text-gray-800">
           <AuthCard isSignIn={isSignIn} toggle={() => setIsSignIn(!isSignIn)} />
+
+          {/* Edge soft merge overlay */}
+          <div className="hidden md:block absolute top-0 right-0 w-12 h-full 
+                          bg-gradient-to-r from-transparent to-white pointer-events-none"></div>
+        </div>
+
+        {/* Right Panel - Auth Form */}
+        <motion.div
+          className="w-full md:w-1/3 flex flex-col justify-center items-center p-10 bg-white"
+          key={isSignIn ? "signIn" : "signUp"}
+          initial={{ opacity: 0, x: isSignIn ? 50 : -50 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ duration: 0.5 }}
+        >
+          <div className="w-full max-w-md space-y-6">
+            {isSignIn ? (
+              <SignInForm toggle={() => setIsSignIn(false)} />
+            ) : (
+              <SignUpForm toggle={() => setIsSignIn(true)} />
+            )}
+          </div>
         </motion.div>
       </div>
     </div>

@@ -1,4 +1,4 @@
-// utils/auth.ts
+import { apiFetch } from "./fetchApi";
 
 export async function signup(userData: {
     name: string;
@@ -8,7 +8,7 @@ export async function signup(userData: {
   }) {
     try {
       const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL;
-      const res = await fetch(`${apiBaseUrl}/api/auth/signup`, {
+      const res = await apiFetch(`${apiBaseUrl}/api/auth/signup`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(userData),
@@ -34,7 +34,7 @@ export async function signup(userData: {
   }) {
     try {
       const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL;
-      const res = await fetch(`${apiBaseUrl}/api/auth/login`, {
+      const res = await apiFetch(`${apiBaseUrl}/api/auth/login`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(credentials),

@@ -35,32 +35,32 @@ export function SignUpForm({ toggle }: SignUpFormProps) {
         <input
           type="text"
           placeholder="Full Name"
-          className="p-3 rounded bg-white text-black"
+          className="p-3 rounded bg-white text-black border-1 border-violet-500 focus:outline-none focus:ring-2 focus:ring-violet-500"
           value={name}
           onChange={(e) => setName(e.target.value)}
         />
         <input
           type="text"
           placeholder="Mobile"
-          className="p-3 rounded bg-white text-black"
+          className="p-3 rounded bg-white text-black border-1 border-violet-500 focus:outline-none focus:ring-2 focus:ring-violet-500"
           value={mobile}
           onChange={(e) => setMobile(e.target.value)}
         />
         <input
           type="email"
           placeholder="Email"
-          className="p-3 rounded bg-white text-black"
+          className="p-3 rounded bg-white text-black border-1 border-violet-500 focus:outline-none focus:ring-2 focus:ring-violet-500"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
         />
         <input
           type="password"
           placeholder="Password"
-          className="p-3 rounded bg-white text-black"
+          className="p-3 rounded bg-white text-black border-1 border-violet-500 focus:outline-none focus:ring-2 focus:ring-violet-500"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
         />
-        <button type="submit" className="bg-gray-100 text-black py-2 rounded hover:bg-gray-600">
+        <button type="submit" className="bg-violet-300 text-black py-2 rounded hover:bg-gray-600">
           Sign Up
         </button>
       </form>

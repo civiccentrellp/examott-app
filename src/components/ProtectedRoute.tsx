@@ -1,19 +1,26 @@
-// components/ProtectedRoute.tsx
 "use client";
-
-import { useEffect } from "react";
+import { useUser } from "@/context/userContext";
 import { useRouter } from "next/navigation";
+import { useEffect } from "react";
 
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
+  const { user, loading } = useUser();
   const router = useRouter();
 
   useEffect(() => {
-    const token = localStorage.getItem("token");
-
-    if (!token) {
-      router.push("/sign-in"); // or wherever your login page is
+    if (!loading && !user) {
+      localStorage.removeItem("token");
+      router.replace("/sign-in");
     }
-  }, [router]);
+  }, [user, loading, router]);
+
+  if (loading) {
+    return (
+      <div className="w-full h-screen flex items-center justify-center text-gray-500">
+        
+      </div>
+    );
+  }
 
   return <>{children}</>;
 };

@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import Image from "next/image";
 import {
@@ -16,16 +16,28 @@ import {
   Row,
   Col,
   Card,
+  Modal,
 } from "react-bootstrap";
 import { CaretRightFill, Search, Broadcast, ShopWindow, Clipboard2CheckFill, TelephoneInboundFill, Arrows, Calendar2Event, Dot, Youtube, Instagram, Facebook, Twitter, Whatsapp, Telegram, ChevronDown, ChevronUp } from "react-bootstrap-icons";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 
 
 
 export default function LandingPage() {
+  const router = useRouter();
   const [showSearch, setShowSearch] = useState(false);
   const [activeSubMenu, setActiveSubMenu] = useState<string | null>(null);
   const [open, setOpen] = useState(false);
+  const [show, setShow] = useState(false);
+  const [showModal, setShowModal] = useState(false);
+
+  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    // You can send form data to backend or show toast here
+    setShowModal(false);
+  };
+
 
   const menuItems = [
     {
@@ -147,7 +159,7 @@ export default function LandingPage() {
                           ))}
                         </NavDropdown>
 
-                        <Nav.Link href="#features">Free Tests</Nav.Link>
+                        <Nav.Link href="https://classplusapp.com/diy/free-material/addContent/test">Free Tests</Nav.Link>
                         <Nav.Link href="#courses">Current Affairs</Nav.Link>
                         <Nav.Link href="#batches">Study Materials</Nav.Link>
                         <NavDropdown
@@ -231,11 +243,17 @@ export default function LandingPage() {
                           </motion.div>
                         </div>
 
-                        <Link href="/sign-in" passHref>
-                          <Button variant="dark" className="ms-2 mt-3 mt-lg-0 px-4">
-                            Login/Register
-                          </Button>
-                        </Link>
+                        <Button
+                          variant="dark"
+                          className="ms-2 mt-3 mt-lg-0 px-4"
+                          // onClick={() => {
+                          //   window.location.href = 'https://elearn.civiccentre.in/learn/account/signin';
+                          // }}
+                          onClick={() => router.push("/sign-in")}
+                        >
+                          Login/Register
+                        </Button>
+
 
                       </Nav>
                     </Offcanvas.Body>
@@ -301,6 +319,9 @@ export default function LandingPage() {
                   const target = e.target as HTMLButtonElement;
                   target.style.backgroundColor = "#000";
                 }}
+                onClick={() => {
+                  window.location.href = 'https://elearn.civiccentre.in/learn/account/signin';
+                }}
               >
                 Get Started
               </Button>
@@ -336,8 +357,12 @@ export default function LandingPage() {
         >
           <div className="row row-cols-2 row-cols-md-4 text-center gx-0 gy-4">
             {/* Item 1 */}
-            <div className="col d-flex flex-column align-items-center gap-2 pb-3 pb-md-0 border-bottom d-md-border-none"
-              style={{ borderRight: "1px solid #dee2e6" }}>
+            <div className="col d-flex flex-column align-items-center gap-2 pb-3 pb-md-0 border-bottom d-md-border-none cursor-pointer"
+              style={{ borderRight: "1px solid #dee2e6" }}
+              onClick={() => {
+                window.location.href = "https://elearn.civiccentre.in/learn/account/signin";
+              }}
+            >
               <div className="bg-light rounded-circle p-3 mb-2">
                 <Broadcast size={28} color="black" />
               </div>
@@ -345,17 +370,29 @@ export default function LandingPage() {
             </div>
 
             {/* Item 2 */}
-            <div className="col d-flex flex-column align-items-center gap-2 pb-3 pb-md-0 border-bottom d-md-border-none"
-              style={{ borderRight: "1px solid #dee2e6" }}>
-              <div className="bg-light rounded-circle p-3 mb-2">
+            <div className="col d-flex flex-column align-items-center gap-2 pb-3 pb-md-0 border-bottom d-md-border-none cursor-pointer"
+              style={{ borderRight: "1px solid #dee2e6" }}
+              onClick={() => {
+                window.location.href = 'https://store.civiccentre.in/';
+              }}
+            >
+              <div className="bg-light rounded-circle p-3 mb-2"
+                onClick={() => {
+                  window.location.href = 'https://store.civiccentre.in/';
+                }}
+              >
                 <ShopWindow size={28} color="black" />
               </div>
               <h6 className="fw-bold mb-0">Store</h6>
             </div>
 
             {/* Item 3 */}
-            <div className="col d-flex flex-column align-items-center gap-2 pb-0"
-              style={{ borderRight: "1px solid #dee2e6" }}>
+            <div className="col d-flex flex-column align-items-center gap-2 pb-0 cursor-pointer"
+              style={{ borderRight: "1px solid #dee2e6" }}
+              onClick={() => {
+                window.location.href = "https://elearn.civiccentre.in/learn/account/signin";
+              }}
+            >
               <div className="bg-light rounded-circle p-3 mb-2">
                 <Clipboard2CheckFill size={28} color="black" />
               </div>
@@ -363,12 +400,63 @@ export default function LandingPage() {
             </div>
 
             {/* Item 4 */}
-            <div className="col d-flex flex-column align-items-center gap-2 pb-0">
+            <div
+              className="col d-flex flex-column align-items-center gap-2 pb-0 cursor-pointer"
+              onClick={() => setShowModal(true)}
+            >
               <div className="bg-light rounded-circle p-3 mb-2">
                 <TelephoneInboundFill size={28} color="black" />
               </div>
               <h6 className="fw-bold mb-0">Request Call</h6>
             </div>
+
+            {/* Modal Form */}
+            <Modal show={showModal} onHide={() => setShowModal(false)} centered>
+              <Modal.Header closeButton>
+                <Modal.Title>Request a Callback</Modal.Title>
+              </Modal.Header>
+              <Form onSubmit={handleSubmit}>
+                <Modal.Body>
+                  <Form.Group className="mb-3" controlId="formName">
+                    <Form.Label>Name</Form.Label>
+                    <Form.Control type="text" placeholder="Enter your name" required />
+                  </Form.Group>
+
+                  <Form.Group className="mb-3" controlId="formEmail">
+                    <Form.Label>Email</Form.Label>
+                    <Form.Control type="email" placeholder="Enter your email" required />
+                  </Form.Group>
+
+                  <Form.Group className="mb-3" controlId="formMobile">
+                    <Form.Label>Mobile Number</Form.Label>
+                    <Form.Control type="tel" placeholder="Enter mobile number" required />
+                  </Form.Group>
+
+                  <Form.Group className="mb-3" controlId="formStudentType">
+                    <Form.Label>Are you a Civic Centre student?</Form.Label>
+                    <Form.Select required>
+                      <option value="">Select</option>
+                      <option value="new">New Student</option>
+                      <option value="civic">Civic Centre Student</option>
+                    </Form.Select>
+                  </Form.Group>
+
+                  <Form.Group className="mb-3" controlId="formEnquiry">
+                    <Form.Label>Enquiry</Form.Label>
+                    <Form.Control as="textarea" rows={3} placeholder="What would you like to know?" />
+                  </Form.Group>
+                </Modal.Body>
+                <Modal.Footer>
+                  <Button variant="secondary" onClick={() => setShowModal(false)}>
+                    Cancel
+                  </Button>
+                  <Button type="submit" variant="dark">
+                    Submit Request
+                  </Button>
+                </Modal.Footer>
+              </Form>
+            </Modal>
+
           </div>
         </div>
 
@@ -403,26 +491,42 @@ export default function LandingPage() {
           <div>
             <div className="fw-bold fs-5 mb-3">Download our Apps</div>
             <div className="d-flex justify-content-center gap-4 flex-wrap">
-              <div className=" d-flex border p-3 rounded shadow-sm bg-light gap-4">
-                <div>
-                  <img src="/assets/playstore.png" alt="" />
+              <a
+                href="https://play.google.com/store/apps/details?id=co.rogers.itphd"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-decoration-none text-dark"
+              >
+                <div className="d-flex border p-3 rounded shadow-sm bg-light gap-4 align-items-center">
+                  <div>
+                    <img src="/assets/playstore.png" alt="Google Play" />
+                  </div>
+                  <span>
+                    Download on The <br />
+                    <strong>Google Play</strong>
+                  </span>
                 </div>
-                <span>
-                  Download on The <br />
-                  <strong>Google Play</strong>
-                </span>
-              </div>
-              <div className="d-flex border p-3 rounded shadow-sm bg-light gap-4">
-                <div>
-                  <img src="/assets/apple.png" alt="" />
+              </a>
+
+              <a
+                href="https://apps.apple.com/in/app/myinstitute/id1472483563"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-decoration-none text-dark"
+              >
+                <div className="d-flex border p-3 rounded shadow-sm bg-light gap-4 align-items-center">
+                  <div>
+                    <img src="/assets/apple.png" alt="App Store" />
+                  </div>
+                  <span>
+                    Download on The <br />
+                    <strong>App Store</strong>
+                  </span>
                 </div>
-                <span>
-                  Download on The <br />
-                  <strong>App Store</strong>
-                </span>
-              </div>
+              </a>
             </div>
           </div>
+
         </div>
       </section>
 

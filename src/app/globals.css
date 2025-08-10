@@ -10,6 +10,83 @@
     list-style-type: disc;
     padding-left: 20px;
 }
+
+/* globals.css or wherever your Tailwind base styles are */
+.tiptap-editor table {
+  @apply w-full border border-border border-collapse;
+}
+
+.tiptap-editor th,
+.tiptap-editor td {
+  @apply border border-border px-2 py-1 align-top;
+}
+
+
+/* Unordered list (bullet) - disc style */
+.tiptap-editor ul {
+  list-style-type: disc;
+  padding-left: 1.5rem;
+  margin-left: 1rem;
+}
+
+/* Ordered list (default) - numbers */
+.tiptap-editor ol {
+  list-style-type: decimal;
+  padding-left: 1.5rem;
+  margin-left: 1rem;
+}
+
+/* Optional: second-level unordered list - circle bullets */
+.tiptap-editor ul ul {
+  list-style-type: circle;
+}
+
+/* Optional: third-level unordered list - square bullets */
+.tiptap-editor ul ul ul {
+  list-style-type: square;
+}
+
+/* Optional: second-level ordered list - lowercase letters */
+.tiptap-editor ol ol {
+  list-style-type: lower-alpha;
+}
+
+/* Optional: third-level ordered list - lowercase roman numerals */
+.tiptap-editor ol ol ol {
+  list-style-type: lower-roman;
+}
+
+
+
+/* Nested list spacing */
+.tiptap-editor li > ul,
+.tiptap-editor li > ol {
+  margin-top: 0.25rem;
+  margin-bottom: 0.25rem;
+}
+
+/* Headings */
+.tiptap-editor h1 {
+  @apply text-3xl font-bold mt-4 mb-2;
+}
+.tiptap-editor h2 {
+  @apply text-2xl font-semibold mt-4 mb-2;
+}
+.tiptap-editor h3 {
+  @apply text-xl font-medium mt-3 mb-1;
+}
+
+/* Blockquotes */
+.tiptap-editor blockquote {
+  @apply border-l-4 border-muted pl-4 italic text-muted-foreground my-4;
+}
+
+
+/* Paragraph spacing */
+.tiptap-editor p {
+  @apply my-2;
+}
+
 .scroll-container {
     overflow-x: auto;
     scroll-snap-type: x mandatory;
@@ -93,4 +170,232 @@ select:-webkit-autofill {
   body {
     @apply bg-background text-foreground;
     }
+}
+
+.custom-accent {
+  accent-color: #16a34a !important;
+}
+
+/* Hide scrollbar for WebKit browsers (Chrome, Safari) */
+::-webkit-scrollbar {
+  width: 0px;
+  height: 0px;
+}
+
+/* Hide scrollbar for Firefox */
+* {
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none;  /* IE 10+ */
+}
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fadeIn {
+  animation: fadeIn 0.2s ease-out forwards;
+}
+
+
+
+@layer utilities {
+  .animate-fade-in {
+    animation: fadeIn 0.25s ease-in-out;
+  }
+  @keyframes fadeIn {
+    0% {
+      opacity: 0;
+      transform: translateY(-5px);
+    }
+    100% {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+}
+
+iframe {
+  -webkit-user-select: none;
+  -webkit-touch-callout: none;
+}
+
+
+
+input[type='checkbox'].custom-checkbox {
+  appearance: none;
+  width: 1.1rem;
+  height: 1.1rem;
+  border: 2px solid #d1d5db; /* Tailwind gray-300 */
+  border-radius: 0.25rem;     /* ⬅️ Square checkbox */
+  background-color: white;
+  position: relative;
+  cursor: pointer;
+  outline: none;
+  box-shadow: none;
+}
+
+input[type='radio'].custom-radio {
+  appearance: none;
+  width: 1.1rem;
+  height: 1.1rem;
+  border: 2px solid #d1d5db; /* Tailwind gray-300 */
+  border-radius: 50%;         /* ⬅️ Circular radio */
+  background-color: white;
+  position: relative;
+  cursor: pointer;
+  outline: none;
+  box-shadow: none;
+}
+
+/* Checked State */
+input[type='checkbox'].custom-checkbox:checked,
+input[type='radio'].custom-radio:checked {
+  background-color: oklch(79.2% 0.209 151.711);
+  border-color: oklch(52.7% 0.154 150.069);
+}
+
+/* Tick mark (✔) for checkbox only */
+input[type='checkbox'].custom-checkbox:checked::after {
+  content: '';
+  position: absolute;
+  top: 2px;
+  left: 5px;
+  width: 4px;
+  height: 8px;
+  border: solid white;
+  border-width: 0 2px 2px 0;
+  transform: rotate(45deg);
+}
+
+/* Dot for radio button */
+input[type='radio'].custom-radio:checked::after {
+  content: '';
+  position: absolute;
+  top: 4px;
+  left: 4px;
+  width: 6px;
+  height: 6px;
+  background-color: white;
+  border-radius: 50%;
+}
+
+
+.glow-on-hover {
+  position: relative;
+  z-index: 0;
+  background: #111 !important;
+  color: white !important;
+  border: none;
+  outline: none;
+  overflow: hidden;
+  border-radius: 10px;
+}
+
+.glow-on-hover:before {
+  content: '';
+  position: absolute;
+  top: -2px;
+  left: -2px;
+  width: calc(100% + 4px);
+  height: calc(100% + 4px);
+  background: linear-gradient(
+    45deg,
+    #ff0000,
+    #ff7300,
+    #fffb00,
+    #48ff00,
+    #00ffd5,
+    #002bff,
+    #7a00ff,
+    #ff00c8,
+    #ff0000
+  );
+  background-size: 400%;
+  z-index: -1;
+  filter: blur(5px);
+  opacity: 0;
+  transition: opacity 0.3s ease-in-out;
+  animation: glowing 20s linear infinite;
+  border-radius: 10px;
+}
+
+.glow-on-hover:hover:before {
+  opacity: 1;
+}
+
+.glow-on-hover:after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: #111;
+  z-index: -1;
+  border-radius: 10px;
+}
+
+.glow-on-hover:active {
+  color: #000;
+}
+
+.glow-on-hover:active:after {
+  background: transparent;
+}
+
+@keyframes glowing {
+  0% {
+    background-position: 0 0;
+  }
+  50% {
+    background-position: 400% 0;
+  }
+  100% {
+    background-position: 0 0;
+  }
+}
+@keyframes gradient-x {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+.animate-gradient-x {
+  background-size: 200% 200%;
+  animation: gradient-x 4s ease infinite;
+}
+
+
+.loader {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  display: inline-block;
+  border-top: 4px solid #FFF;
+  border-right: 4px solid transparent;
+  box-sizing: border-box;
+  animation: rotation 10s linear infinite;
+  position: relative;
+}
+.loader::after {
+  content: '';
+  box-sizing: border-box;
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  border-left: 4px solid #8826ca;
+  border-bottom: 4px solid transparent;
+  animation: rotation 10s linear infinite reverse;
+}
+@keyframes rotation {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
 }

@@ -1,420 +1,402 @@
-"use client";
-import 'react-quill/dist/quill.snow.css';
-import { getStorage, ref, uploadBytesResumable, getDownloadURL } from "firebase/storage";
-import { Plus } from "react-bootstrap-icons";
-import Link from "next/link";
-import { useEffect, useState } from "react";
-import { getCourses, Course, addCourse } from "@/utils/getCourses";
-import { storage } from "@/utils/firebase";
-import { uploadCourseImage } from "@/utils/firebaseUpload";
-import dynamic from "next/dynamic";
-const ReactQuill = dynamic(() => import("react-quill"), { ssr: false });
+// "use client";
+// import Link from "next/link";
+// import { useEffect, useState } from "react";
+// import { getCourses, Course } from "@/utils/courses/getCourses";
+// import { toast } from "sonner";
+// import { useRouter } from "next/navigation";
+// import { Button } from "@/components/ui/button";
+// import { hasRole } from "@/utils/auth/rbac";
+// import VisibilityCheck from "@/components/VisibilityCheck";
+// import { useUser } from "@/context/userContext";
+// import { SearchIcon, ArrowRight } from "lucide-react";
+// import CreateCourseModal from "@/components/courses/CourseCreation/CreateCourseModal";
+// import { useCreateRazorpayOrder, useVerifyRazorpaySignature } from "@/hooks/payments/useRazorpay";
+// import Script from "next/script";
+// import { useUserEnrollments, useUserEnrolledCourses, useLastOpenedCourse, useUpdateLastOpenedCourse } from "@/hooks/courses/useCourseEnrollments";
+// import { mapEnrolledCourseToCourse } from "@/utils/courses/courseEnrollments";
+// import { useCourseProgressSummary } from "@/hooks/courses/useCourseContentProgress";
 
 
-export default function CoursesPage() {
+// declare global {
+//     interface Window {
+//         Razorpay: any;
+//     }
+// }
 
-    const [courses, setCourses] = useState<Course[]>([]);
-    const [isModalOpen, setIsModalOpen] = useState(false);
-    const [courseData, setCourseData] = useState<{
-        name: string;
-        description: string;
-        goal: string;
-        videoUrl: string;
-        price: string;
-        originalPrice: string;
-        thumbnail: string;
-        startDate: string;
-        endDate: string;
-        duration: string;
-    }>({
-        name: "",
-        description: "",
-        goal: "",
-        videoUrl: "",
-        price: "",
-        originalPrice: "",
-        thumbnail: "",
-        startDate: "",
-        endDate: "",
-        duration: ""
-    });
+// export default function CoursesPage() {
+//     const { user, loading } = useUser();
+//     const router = useRouter();
+//     const [courses, setCourses] = useState<Course[]>([]);
+//     const [isModalOpen, setIsModalOpen] = useState(false);
+//     const [searchTerm, setSearchTerm] = useState("");
+
+//     const createOrderMutation = useCreateRazorpayOrder();
+//     const verifySignatureMutation = useVerifyRazorpaySignature();
+//     const [enrolledCourses, setEnrolledCourses] = useState<string[]>([]);
+//     const [showEnrolledOnly, setShowEnrolledOnly] = useState(false);
+//     const { data: enrolledCoursesFull } = useUserEnrolledCourses(user?.id || "", !!user?.id);
+//     const { data: enrollments } = useUserEnrollments(user?.id || "", !!user?.id);
+//     const { data: lastOpenedCourse } = useLastOpenedCourse(user?.id || "", !!user?.id);
+//     const updateLastOpenedMutation = useUpdateLastOpenedCourse();
+//     const lastOpenedCourseId = lastOpenedCourse?.id;  // safe check
+//     const { data: progressSummary } = useCourseProgressSummary(lastOpenedCourseId || "");
+//     const completion = progressSummary?.percentage ?? 0;
 
 
-    useEffect(() => {
-        async function fetchData() {
-            try {
-                const courses = await getCourses();
-                console.log("Fetched courses:", courses);
-                setCourses(courses);
-            } catch (error) {
-                console.error("Error fetching courses:", error);
-            }
-        }
-        fetchData();
-    }, []);
+//     const handleCourseOpen = (courseId: string) => {
+//         if (user?.id && enrollments) {
+//             const enrollment = enrollments.find((e) => e.courseId === courseId);
+//             if (enrollment) {
+//                 updateLastOpenedMutation.mutate({
+//                     userId: user.id,
+//                     enrollmentId: enrollment.id,
+//                 });
+//             }
+//         }
+//         // router.push(`/courses/course-overview/${courseId}`);
+//         // router.push(`/courses/${courseId}`);
+//         const isEnrolled = enrolledCourses.includes(courseId);
+//         router.push(`/courses/${courseId}?enrolled=${isEnrolled}`);
+//     };
+
+//     useEffect(() => {
+//         if (enrollments) {
+//             setEnrolledCourses(enrollments.map((e) => e.courseId));
+//         }
+//     }, [enrollments]);
 
 
-    const calculateDuration = (start: string, end: string): string => {
-        if (!start || !end) return "";
-        const startDate = new Date(start);
-        const endDate = new Date(end);
+//     useEffect(() => {
+//         async function fetchData() {
+//             try {
+//                 const courses = await getCourses();
+//                 setCourses(courses);
+//             } catch (error) {
+//                 console.error("Error fetching courses:", error);
+//                 toast.error("Failed to load courses");
+//             }
+//         }
+//         fetchData();
+//     }, []);
 
-        const diffInMonths = (endDate.getFullYear() - startDate.getFullYear()) * 12 + (endDate.getMonth() - startDate.getMonth());
+//     if (loading) return <p>Loading...</p>;
 
-        if (diffInMonths < 1) return "Less than a month";
-        if (diffInMonths === 1) return "1 month";
-        if (diffInMonths < 12) return `${diffInMonths} months`;
+//     const formatDateToDDMMYY = (dateStr: string): string => {
+//         if (!dateStr) return "";
+//         const date = new Date(dateStr);
+//         const day = String(date.getDate()).padStart(2, "0");
+//         const month = String(date.getMonth() + 1).padStart(2, "0");
+//         const year = String(date.getFullYear()).slice(-2);
+//         return `${day}-${month}-${year}`;
+//     };
 
-        const years = Math.floor(diffInMonths / 12);
-        const remainingMonths = diffInMonths % 12;
+//     const handleSearch = (value: string) => {
+//         setSearchTerm(value.toLowerCase());
+//     };
 
-        return remainingMonths === 0
-            ? `${years} year${years > 1 ? "s" : ""}`
-            : `${years} year${years > 1 ? "s" : ""} ${remainingMonths} month${remainingMonths > 1 ? "s" : ""}`;
-    };
+//     const getCoursePrice = (course: Course) => {
+//         if (!course.pricingOptions || course.pricingOptions.length === 0) return null;
+//         const plan = course.pricingOptions.find((p) => p.promoted) || course.pricingOptions[0];
+//         return {
+//             price: plan.price,
+//             discount: plan.discount,
+//             effectivePrice: plan.effectivePrice ?? plan.price - (plan.discount || 0),
+//             pricingOptionId: plan.id,
+//         };
+//     };
 
+//     const getExpiryInfo = (course: Course) => {
+//         const pricing = course.pricingOptions?.[0];
 
-    const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-        const { name, value } = e.target;
-        setCourseData((prev) => {
-            const updatedData = { ...prev, [name]: value };
-            if (name === "startDate" || name === "endDate") {
-                updatedData.duration = calculateDuration(updatedData.startDate, updatedData.endDate);
-            }
-            return updatedData;
-        });
-    };
+//         if (course.accessType === "SINGLE" && pricing?.durationInDays) {
+//             const years = (pricing.durationInDays / 365).toFixed(1).replace(/\.0$/, "");
+//             return `${years} year${Number(years) > 1 ? "s" : ""}`;
+//         }
+//         if (course.accessType === "MULTIPLE") {
+//             const months = pricing?.durationInDays
+//                 ? Math.round(pricing.durationInDays / 30)
+//                 : null;
+//             return months ? `${months} month${months > 1 ? "s" : ""}` : "Multiple validity options";
+//         }
+//         if (course.accessType === "EXPIRY_DATE" && pricing?.expiryDate)
+//             return `${formatDateToDDMMYY(pricing.expiryDate)}`;
+//         if (course.accessType === "LIFETIME") return "Unlimited";
 
-    // const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    //     const file = e.target.files?.[0];
-    //     if (!file) return;
+//         return "";
+//     };
 
-    //     // Reference in Firebase Storage
-    //     const storageRef = ref(storage, `thumbnails/${Date.now()}-${file.name}`);
+//     const handleBuyNow = async (
+//         e: React.MouseEvent<HTMLButtonElement>,
+//         courseId: string,
+//         pricingOptionId: string
+//     ) => {
+//         e.stopPropagation();
+//         try {
 
-    //     // Start Upload
-    //     const uploadTask = uploadBytesResumable(storageRef, file);
+//             if (!user?.id) {
+//                 toast.error("Please login to continue");
+//                 return;
+//             }
+//             if (!pricingOptionId) {
+//                 toast.error("Pricing option not available");
+//                 return;
+//             }
 
-    //     uploadTask.on(
-    //         "state_changed",
-    //         (snapshot) => {
-    //             const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
-    //             console.log(`Upload Progress: ${progress}%`);
-    //         },
-    //         (error) => {
-    //             console.error("Image upload failed:", error);
-    //         },
-    //         async () => {
-    //             const downloadURL = await getDownloadURL(uploadTask.snapshot.ref);
-    //             console.log("Uploaded image URL:", downloadURL);
+//             const { order } = await createOrderMutation.mutateAsync({
+//                 userId: user.id,
+//                 courseId,
+//                 pricingOptionId,
+//             });
 
-    //             setCourseData((prev) => ({
-    //                 ...prev,
-    //                 thumbnail: downloadURL, // ✅ Store URL in state
-    //             }));
-    //         }
-    //     );
-    // };
+//             if (!order) {
+//                 toast.error("Unable to create payment order");
+//                 return;
+//             }
 
-    const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
-        const file = e.target.files?.[0];
-        if (!file) return;
+//             // 2. Open Razorpay Checkout
+//             const options = {
+//                 key: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID,
+//                 amount: order.amount,
+//                 currency: order.currency,
+//                 name: "ExamOtt",
+//                 description: "Course Purchase",
+//                 order_id: order.id,
+//                 handler: async function (response: any) {
+//                     try {
+//                         await verifySignatureMutation.mutateAsync({
+//                             razorpay_order_id: response.razorpay_order_id,
+//                             razorpay_payment_id: response.razorpay_payment_id,
+//                             razorpay_signature: response.razorpay_signature,
+//                         });
+//                         toast.success("Payment successful, course enrolled!");
+//                         router.push(`/courses/course-overview/${courseId}`);
+//                     } catch (err) {
+//                         toast.error("Payment verification failed");
+//                     }
+//                 },
+//                 prefill: {
+//                     name: user?.name,
+//                     email: user?.email,
+//                 },
+//                 theme: { color: "#7C3AED" },
+//             };
 
-        try {
-            const downloadURL = await uploadCourseImage(file);
-            console.log("Uploaded image URL:", downloadURL);
+//             const rzp = new window.Razorpay(options);
+//             rzp.open();
+//         } catch (err) {
+//             toast.error("Failed to initiate payment");
+//         }
+//     };
 
-            setCourseData((prev) => ({
-                ...prev,
-                thumbnail: downloadURL, // ✅ Store Firebase image URL
-            }));
-        } catch (error) {
-            console.error("Image upload failed:", error);
-        }
-    };
+//     return (
+//         <>
+//             {/* Razorpay script */}
+//             <Script src="https://checkout.razorpay.com/v1/checkout.js" strategy="afterInteractive" />
 
-    const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-        e.preventDefault();
-        const duration = calculateDuration(courseData.startDate, courseData.endDate);
-        const sanitizedData = {
-            ...courseData,
-            originalPrice: parseFloat(courseData.originalPrice),
-            discountedPrice: parseFloat(courseData.price), // Assuming price is discounted price
-            expiryDate: courseData.endDate, // Matching backend field
-        };
+//             <div className="mx-auto lg:p-2">
+//                 {/* Header Section */}
+//                 <div className="flex justify-between items-center mb-3 gap-1 lg:px-3">
+//                     <div className="flex items-center bg-white w-full pl-4 sm:py-1 border border-gray-300 rounded-4 focus:outline-none focus:ring-2 focus:ring-violet-500">
+//                         <span><SearchIcon color="gray" size={20} /></span>
+//                         <div className="w-px h-6 bg-gray-300 mx-3" />
+//                         <input
+//                             type="text"
+//                             placeholder="Search courses..."
+//                             onChange={(e) => handleSearch(e.target.value)}
+//                             className="bg-transparent border-none w-full focus:outline-none focus:ring-0 focus:shadow-none appearance-none"
+//                         />
+//                         <VisibilityCheck user={user} check="student" checkType="role">
+//                             <Button
+//                                 className="flex items-center gap-3 px-3 h-6 bg-white text-gray-600 border-l border-gray-300 rounded-0 font-semibold hover:scale-105 transition-all duration-200"
+//                                 onClick={() => setShowEnrolledOnly((prev) => !prev)}
+//                             >
+//                                 <p>{showEnrolledOnly ? "Show All" : "Enrollments"}</p>
+//                                 <ArrowRight size={24} />
+//                             </Button>
 
-        try {
-            const newCourse = await addCourse(sanitizedData);
-            setCourses([...courses, newCourse]);
-            setIsModalOpen(false);
-        } catch (error) {
-            console.error("Failed to add course:", error);
-        }
-    };
+//                         </VisibilityCheck>
+//                         <VisibilityCheck user={user} check="course.create" checkType="permission">
+//                             <Button
+//                                 className="flex items-center gap-3 h-6 bg-white text-gray-600 border-l border-gray-200 rounded-0 font-semibold hover:scale-105 transition-all duration-200"
+//                                 onClick={() => setIsModalOpen(true)}
+//                             >
+//                                 <p>Create Course</p>
+//                                 <ArrowRight size={24} />
+//                             </Button>
+//                         </VisibilityCheck>
+//                     </div>
+//                 </div>
 
-    const handleQuillChange = (value: string) => {
-        setCourseData((prev) => ({
-            ...prev,
-            description: value
-        }));
-    };
+//                 <CreateCourseModal
+//                     isOpen={isModalOpen}
+//                     onClose={() => setIsModalOpen(false)}
+//                     onSuccess={(newCourse) => setCourses((prev) => [...prev, newCourse])}
+//                 />
 
-    const formatDateToDDMMYY = (dateStr: string): string => {
-        if (!dateStr) return '';
-        const date = new Date(dateStr);
-        const day = String(date.getDate()).padStart(2, '0');
-        const month = String(date.getMonth() + 1).padStart(2, '0');
-        const year = String(date.getFullYear()).slice(-2);
-        return `${day}/${month}/${year}`;
-    };
-    
+//                 {/* Courses Grid */}
+//                 <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3 lg:gap-3 overflow-y-auto max-h-[80vh] lg:p-4 pb-24">
+//                     <VisibilityCheck user={user} check="student" checkType="role">
+//                         {lastOpenedCourse && (() => {
+//                             const isEnrolled = enrolledCourses.includes(lastOpenedCourse.id);
 
+//                             return (
+//                                 <div
+//                                     className="col-span-full relative flex flex-row items-center gap-3 sm:gap-5  bg-white border rounded-2xl p-3 cursor-pointer mb-2 hover:shadow-2xl transition-all duration-300 group"
+//                                     onClick={() => router.push(`/courses/${lastOpenedCourse.id}?enrolled=${isEnrolled}`)}
 
+//                                 >
+//                                     <img
+//                                         src={lastOpenedCourse.thumbnail || "/placeholder.jpg"}
+//                                         alt={lastOpenedCourse.name}
+//                                         className="w-40 h-24 sm:w-60 sm:h-32 object-cover rounded-xl border border-gray-300 shadow-md group-hover:scale-105 transition-transform"
+//                                     />
 
-    const handleOpenModal = () => setIsModalOpen(true);
-    const handleCloseModal = () => setIsModalOpen(false);
+//                                     <div className="flex-1 w-full flex flex-col gap-2">
+//                                         <h2 className="text-xs sm:text-lg text-start font-semibold text-gray-900 sm:my-2 line-clamp-2">
+//                                             {lastOpenedCourse.name}
+//                                         </h2>
 
+//                                         {/* Dynamic Progress Bar */}
+//                                         <div className="relative w-full h-1 sm:h-2 bg-gray-200 rounded-full overflow-hidden">
+//                                             <div
+//                                                 className="absolute top-0 left-0 h-full bg-gradient-to-r from-violet-400 via-indigo-400 to-pink-500 rounded-full transition-all duration-700 ease-out"
+//                                                 style={{ width: `${completion}%` }}
+//                                             />
+//                                         </div>
+//                                         <span className="text-xs font-semibold text-gray-600 mt-1">
+//                                             {completion}%
+//                                         </span>
 
-    return (
-        <div className="container mx-auto p-6 overflow-y-auto">
-            {/* Header Section */}
-            <div className="flex justify-between items-center mb-6">
-                <h1 className="text-2xl font-bold text-gray-800">Courses</h1>
-                <button
-                    className="flex items-center gap-2 bg-gray-900 text-white px-4 py-2 rounded-lg hover:bg-gray-600"
-                    onClick={handleOpenModal}
-                >
-                    <Plus size={24} />
-                    <p>Create Course</p>
-                </button>
-            </div>
-
-            {/* Modal */}
-            {isModalOpen && (
-                <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center px-4 z-50">
-                    <div className="bg-white p-6 rounded-lg w-full max-w-[90%] sm:max-w-[600px] md:max-w-[750px] lg:max-w-[900px] overflow-auto max-h-[90vh]">
-                        <h1 className="text-xl text-center font-bold mb-2">
-                            Create Course
-                        </h1>
-                        <form onSubmit={handleSubmit} >
-                            <label className="block mb-2 text-sm text-gray-600 font-bold">
-                                Course Name:
-                            </label>
-                            <input
-                                type="text"
-                                name="name"
-                                className="w-full p-2 border border-gray-400 rounded-lg mb-4 text-gray-700 focus:outline-none focus:ring-0 focus:shadow-none"
-                                onChange={handleInputChange}
-                                required
-                            />
-
-                            <label className="block mb-2 text-sm text-gray-600 font-bold">
-                                Description:
-                            </label>
-                            <ReactQuill
-                                value={courseData.description}
-                                onChange={handleQuillChange}
-                                placeholder="Write course description here..."
-                                className=" p-2 w-full h-[auto] bg-white"
-                                modules={{
-                                    toolbar: [
-                                        [{ header: [1, 2, false] }],
-                                        ["bold", "italic", "underline"],
-                                        [{ list: "ordered" }, { list: "bullet" }],
-                                        ["link", "image"],
-                                        ["clean"]
-                                    ]
-                                }}
-                                formats={[
-                                    "header",
-                                    "bold", "italic", "underline",
-                                    "list", "bullet",
-                                    "link", "image"
-                                ]}
-                            />
-
-                            {/* <textarea
-                                className="w-full p-2 border border-gray-400 rounded-lg mb-4 outline-none"
-                                name="description"
-                                onChange={handleInputChange}
-                                required
-                            ></textarea> */}
-
-                            {/* Responsive grid layout for small screens */}
-                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                                <div>
-                                    <label className="block mb-2 text-sm text-gray-600 font-bold">
-                                        Goal:
-                                    </label>
-                                    <input
-                                        type="text"
-                                        name="goal"
-                                        className="w-full p-2 border border-gray-400 rounded-lg mb-4 outline-none"
-                                        onChange={handleInputChange}
-                                        required
-                                    />
-                                </div>
-                                <div>
-                                    <label className="block mb-2 text-sm text-gray-600 font-bold">
-                                        Video URL:
-                                    </label>
-                                    <input
-                                        type="text"
-                                        name="videoUrl"
-                                        className="w-full p-2 border border-gray-400 rounded-lg mb-4 outline-none"
-                                        onChange={handleInputChange}
-                                        required
-                                    />
-                                </div>
-                            </div>
-
-                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                                <div>
-                                    <label className="block mb-2 text-sm text-gray-600 font-bold">
-                                        Price:
-                                    </label>
-                                    <input
-                                        type="number"
-                                        name="price"
-                                        className="w-full p-2 border border-gray-400 rounded-lg mb-4 outline-none"
-                                        onChange={handleInputChange}
-                                        required
-                                    />
-                                </div>
-                                <div>
-                                    <label className="block mb-2 text-sm text-gray-600 font-bold">
-                                        Original Price:
-                                    </label>
-                                    <input
-                                        type="number"
-                                        name="originalPrice"
-                                        className="w-full p-2 border border-gray-400 rounded-lg mb-4 outline-none"
-                                        onChange={handleInputChange}
-                                        required
-                                    />
-                                </div>
-                            </div>
-
-                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                                <div>
-                                    <label className="block mb-2 text-sm text-gray-600 font-bold">
-                                        Upload Course Image:{" "}
-                                    </label>
-                                    <input
-                                        type="file"
-                                        id="courseImage"
-                                        className="w-full p-2 border border-gray-400 rounded-lg mb-4 outline-none"
-                                        onChange={handleFileChange}
-                                        required
-                                    />
-                                </div>
-                                <div className="grid grid-cols-2 gap-4">
-                                    <div>
-                                        <label className="block mb-2 text-sm text-gray-600 font-bold">
-                                            Start Date:
-                                        </label>
-                                        <input
-                                            type="date"
-                                            name="startDate"
-                                            id="courseStartDate"
-                                            className="w-full p-2 border border-gray-400 rounded-lg mb-4 outline-none"
-                                            onChange={handleInputChange}
-                                            required
-                                        />
-
-                                    </div>
-                                    <div>
-                                        <label className="block mb-2 text-sm text-gray-600 font-bold">
-                                            End Date:
-                                        </label>
-                                        <input
-                                            type="date"
-                                            name="endDate"
-                                            id="courseEndDate"
-                                            className="w-full p-2 border border-gray-400 rounded-lg mb-4 outline-none"
-                                            onChange={handleInputChange}
-                                            required
-                                        />
-
-                                    </div>
-                                </div>
-                            </div>
-
-                            {/* Buttons */}
-                            <div className="flex flex-col sm:flex-row gap-4 my-4">
-                                <button
-                                    type="submit"
-                                    className="w-full sm:w-1/2 bg-gray-900 text-white px-4 py-2 rounded hover:bg-gray-600"
-                                >
-                                    Submit
-                                </button>
-                                <button
-                                    type="button"
-                                    onClick={handleCloseModal}
-                                    className="w-full sm:w-1/2 bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600"
-                                >
-                                    Cancel
-                                </button>
-                            </div>
-                        </form>
-                    </div>
-                </div>
-            )}
-
-            {/* Courses Grid */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3 gap-8">
-                {courses.map((course: Course) => (
-                    <div
-                        key={course.id}
-                        className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition"
-                    >
-
-                        {/* Course Thumbnail */}
-                        <div className="relative w-full pt-[56.25%] bg-gray-200 overflow-hidden">
-                            <img
-                                src={course.thumbnail || "/placeholder.jpg"}
-                                alt={course.name}
-                                className="absolute top-0 left-0 w-full h-full object-fit"
-                            />
-                        </div>
+//                                         <div className="flex items-center sm:justify-end gap-2 mt-2">
+//                                             <p className="text-xs sm:text-sm text-gray-500">Resume learning</p>
+//                                             <span className="flex items-center justify-center rounded-full hover:scale-110 transition">
+//                                                 <ArrowRight size={18} />
+//                                             </span>
+//                                         </div>
+//                                     </div>
+//                                 </div>
+//                             );
+//                         })()}
+//                     </VisibilityCheck>
 
 
-                        {/* Course Details */}
-                        <div className="p-4 flex flex-col items-center">
-                            <h2 className="text-lg font-semibold text-gray-900 my-4">
-                                {course.name}
-                            </h2>
+//                     {
+//                         (showEnrolledOnly
+//                             ? (enrolledCoursesFull || []).map((e) => mapEnrolledCourseToCourse(e.course))
+//                             : courses
+//                         )
+//                             .filter((course) => course.name.toLowerCase().includes(searchTerm))
+//                             .map((course) => {
+//                                 const pricing = getCoursePrice(course);
+//                                 return (
+//                                     <div
+//                                         key={course.id}
+//                                         className="flex flex-row justify-between sm:block bg-white rounded-2xl shadow-md hover:shadow-xl transition overflow-hidden group border border-gray-100 p-3 mb-2 cursor-pointer"
+//                                         onClick={() => handleCourseOpen(course.id)}
 
-                            <div className="flex justify-around w-full">
-                                {/* Price & Discount */}
-                                <p className="text-gray-700">
-                                    <span className="font-bold text-green-600 mx-2">
-                                    ₹{course.discountedPrice}
-                                    </span>{" "}
-                                    <span className="line-through text-gray-500">
-                                    ₹{course.originalPrice}
-                                    </span>
-                                </p>
+//                                     >
+//                                         <div className="relative w-40 h-24 flex items-center justify-center sm:w-full sm:pt-[56%] bg-gray-200 overflow-hidden rounded-2xl">
+//                                             <img
+//                                                 src={course.thumbnail || "/placeholder.jpg"}
+//                                                 alt={course.name}
+//                                                 className="absolute top-0 left-0 w-full h-full object-cover transform group-hover:scale-110 transition duration-300 rounded-2xl"
+//                                             />
+//                                         </div>
 
-                                {/* Expiry Date */}
-                                <p className="text-sm text-gray-500">
-                                Expires on: <span className="font-medium">{formatDateToDDMMYY(course.endDate)}</span>
-                                </p>
-                            </div>
+//                                         <div className="w-2/4 sm:w-full pt-2 flex flex-col items-center">
+//                                             <div className="relative group w-full">
+//                                                 <h2 className="w-full text-xs sm:text-sm text-start font-semibold text-gray-900 sm:my-2 line-clamp-2 sm:line-clamp-1">
+//                                                     {course.name}
+//                                                 </h2>
+//                                                 <div className="absolute w-full right-0 bottom-100 mb-1 hidden group-hover:block bg-gray-100 text-black text-center text-sm rounded px-2 py-2 overflow-wrap z-10">
+//                                                     {course.name}
+//                                                 </div>
+//                                             </div>
 
-                            {/* Explore Button */}
-                            <Link
-                                className="w-full"
-                                href={`/courses/course-overview/${course.id}`}
-                            >
-                                <button className="mt-4 w-full bg-gray-900 text-white py-2 rounded-lg hover:bg-gray-600">
-                                    Explore
-                                </button>
-                            </Link>
-                        </div>
-                    </div>
-                ))}
-            </div>
-        </div>
-    );
+//                                             <div className="flex flex-row justify-around w-full items-center gap-2">
+//                                                 <p className="text-gray-700 flex items-center">
+//                                                     {pricing ? (
+//                                                         <>
+//                                                             <span className=" text-xs font-medium sm:text-sm sm:font-bold text-green-600 mx-2">
+//                                                                 ₹{pricing.effectivePrice}
+//                                                             </span>
+//                                                             {pricing.discount > 0 && (
+//                                                                 <span className="line-through text-xs text-gray-500">
+//                                                                     ₹{pricing.price}
+//                                                                 </span>
+//                                                             )}
+//                                                         </>
+//                                                     ) : (
+//                                                         <span className="text-gray-500">No Pricing</span>
+//                                                     )}
+//                                                 </p>
+//                                                 <p className="text-xs sm:text-sm font-medium text-gray-900 py-1 px-2 rounded-2">
+//                                                     {getExpiryInfo(course)}
+//                                                 </p>
+//                                             </div>
+
+//                                             <div className="w-full mt-1 sm:mt-3 flex flex-row gap-2">
+//                                                 {hasRole(user, "student") ? (
+//                                                     enrolledCourses.includes(course.id) ? (
+//                                                         <span className="flex-1 text-center text-green-500 font-medium bg-green-50 rounded-lg border-1 border-green-500 lg:py-2">
+//                                                             Purchased
+//                                                         </span>
+//                                                     ) : (
+//                                                         // <button
+//                                                         //     onClick={(e) => handleBuyNow(e, course.id, pricing?.pricingOptionId || "")}
+//                                                         //     className="flex-1 text-center text-violet-500 font-medium bg-violet-50 rounded-lg border-1 border-violet-500 shadow-md px-3 lg:py-2 hover:bg-violet-300 transition-all duration-200"
+//                                                         // >
+//                                                         //     Buy Now
+//                                                         // </button>
+
+//                                                         <button
+//                                                             onClick={(e) => {
+//                                                                 e.stopPropagation();
+//                                                                 toast.info("Redirecting to Instamojo. Please take screenshot after payment.");
+
+//                                                                 setTimeout(() => {
+//                                                                     window.open("https://www.instamojo.com/@CivicCentre", "_blank");
+//                                                                     router.push(`/courses/payment-confirmation?courseId=${course.id}`);
+//                                                                 }, 1500); // 1.5 sec delay so user sees message
+//                                                             }}
+//                                                             className="flex-1 text-center text-violet-500 font-medium bg-violet-50 rounded-lg border-1 border-violet-500 shadow-md px-3 lg:py-2 hover:bg-violet-300 transition-all duration-200"
+//                                                         >
+//                                                             Buy Now
+//                                                         </button>
+
+//                                                     )
+//                                                 ) : (
+//                                                     <span className="w-full flex justify-between items-center">
+//                                                         <div
+//                                                             className={`inline-flex items-center px-3 py-1 text-xs font-medium rounded-md ${course.status === "UNPUBLISHED" || course.status === "EXPIRED"
+//                                                                 ? "bg-gray-50 text-gray-700 border border-gray-300"
+//                                                                 : "bg-green-50 text-black border-1 border-green-300"
+//                                                                 }`}
+//                                                         >
+//                                                             {course.status === "UNPUBLISHED"
+//                                                                 ? "Unpublished"
+//                                                                 : course.status === "EXPIRED"
+//                                                                     ? "Expired"
+//                                                                     : "Published"}
+//                                                         </div>
+//                                                         <div className="px-3 py-1 text-xs font-medium rounded-md bg-gray-50 text-gray-700 border border-gray-300">
+//                                                             <p>{course.goal}</p>
+//                                                         </div>
+//                                                     </span>
+//                                                 )}
+//                                             </div>
+//                                         </div>
+//                                     </div>
+//                                 );
+//                             })}
+//                 </div>
+//             </div>
+//         </>
+//     );
+// }
+
+import CoursePage from "@/components/courses/CoursePage";
+
+export default function Page() {
+  return <CoursePage />;
 }
